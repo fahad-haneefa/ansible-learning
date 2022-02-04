@@ -1,1 +1,16 @@
 ---
+name: Gather Facts From Switch
+hosts: switches
+connection: network_cli
+gather_facts: false
+
+tasks:
+  - name: Gathering Facts from {{ inventory_hostname}}
+    ios_facts:
+      gather_subset: min
+    register: collected_facts
+
+  - name: Print the Facts Info
+    debug:
+      var: collected_facts
+   

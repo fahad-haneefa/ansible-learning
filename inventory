@@ -3,6 +3,6 @@
 10.10.20.178
 
 [switches:vars]
-os=ios
-user=cisco
-password=cisco
+ansible_os=ios
+ansible_user=cisco
+ansible_password=cisco
