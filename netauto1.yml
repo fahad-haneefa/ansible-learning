@@ -1,10 +1,10 @@
 ---
-name: Gather Facts From Switch
-hosts: switches
-connection: network_cli
-gather_facts: false
+- name: Gather Facts From Switch
+  hosts: switches
+  connection: network_cli
+  gather_facts: false
 
-tasks:
+  tasks:
   - name: Gathering Facts from {{ inventory_hostname}}
     ios_facts:
       gather_subset: min
