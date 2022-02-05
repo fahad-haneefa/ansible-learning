@@ -8,7 +8,7 @@
     tasks:
 
       - name: RETRIEVE VLANS JSON RESPONSE
-        eos_command:
+        nxos_command:
           commands:
             - show vlan brief | json
         register: vlan_data
@@ -30,11 +30,5 @@
           that:
             - "'20' in existing_vlan_ids"
     
-  - name: PLAY 4 - CREATE REPORTS
-    hosts: "switches"
-    connection: network_cli
-    gather_facts: no
-
-    tasks:
 
       

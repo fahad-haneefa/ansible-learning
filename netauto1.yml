@@ -2,15 +2,46 @@
 - name: Gather Facts From Switch
   hosts: switches
   connection: network_cli
-  gather_facts: false
-
+  gather_facts: true
+  
   tasks:
   - name: Gathering Facts from {{ inventory_hostname}}
     ios_facts:
-      gather_subset: min
+      gather_subset: all
     register: collected_facts
+
+  - name: GENERATE DEVICE SPECIFIC REPORTS
+    template:
+      src: ./templates/report.j2
+      dest: ./files/report_{{ inventory_hostname }}.md
+    tags:
+    - report
 
   - name: Print the Facts Info
     debug:
       var: collected_facts
-   
+
+  - name: Saving to a File
+    template:
+      src: "./templates/snmp.j2"
+      dest: "./files/{{ inventory_hostname }}.cfg"
+
+  - name: Reverse template
+    template:
+      src: "./templates/demo.j2"
+      dest: "./files/demo_out.txt"
+
+
+  - name: Commands
+    nxos_command:
+      commands: 
+      - show user-account | json
+      - show cdp neighbor
+    register: users
+    tags:
+    - now
+
+  - debug:
+      var: users.stdout_lines.0.TABLE_template.ROW_template.0.usr_name
+    tags:
+    - now
