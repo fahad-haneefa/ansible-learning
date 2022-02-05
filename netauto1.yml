@@ -21,6 +21,7 @@
     debug:
       var: collected_facts
 
+<<<<<<< HEAD
   - name: Saving to a File
     template:
       src: "./templates/snmp.j2"
@@ -45,3 +46,32 @@
       var: users.stdout_lines.0.TABLE_template.ROW_template.0.usr_name
     tags:
     - now
+=======
+  - name: Issue Command
+    ios_command:
+      commands:
+      - show run | in username
+    register: local_users
+
+  - name: Print Local Users Configured
+    debug:
+      var: local_users['stdout'][0]
+
+  - name: Saving to a File
+    template:
+      src: snmp.j2
+      dest: ./files/{{ inventory_hostname }}.cfg
+  
+  - name: GENERATE DEVICE SPECIFIC REPORTS
+    template:
+      src: ./report.j2
+      dest: ./files/reports/{{ inventory_hostname }}.md
+
+  - name: CREATE MASTER REPORT
+    assemble:
+      src: ./files/reports/
+      dest: ./files/master-report.md
+      delimiter: "---"
+    run_once: true
+   
+>>>>>>> 1990c9f47a6bfc34ded4f0facac99dc2c1af6513
