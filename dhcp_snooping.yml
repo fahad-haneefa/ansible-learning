@@ -1,0 +1,25 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    switch_output:
+     - ip dhcp snooping
+     - ip dhcp snooping vlan 100, 200, 300
+    snoop_vlan: []
+
+  tasks:
+  - name: EXAMPLE
+    set_fact:
+      snoop_vlans: "{{ snoop_vlan + [ switch_output.1 | regex_replace('.*vlan (?P<vlan>\\d+)', '\\g<vlan>')] }}"
+
+  - name: List of VLANs
+    debug:
+       var: snoop_vlans
+
+  - name: Global Check
+    set_fact:
+      snoop_status: "Enabled"
+    when: "'ip dhcp snooping' in switch_output"
+
+  - debug:
+      msg: "DHCP snooping {{ snoop_status }} for {{ snoop_vlans.0 }}"
