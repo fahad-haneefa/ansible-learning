@@ -1,6 +1,8 @@
 ---
-- hosts: localhost
+- name: "*** DHCP Snooping Configuration Check ***"
+  hosts: localhost
   connection: local
+  gather_facts: false
   vars:
     cli_out:
       - ip dhcp snooping
@@ -9,24 +11,26 @@
     vlans: ""
 
   tasks:
-  - debug:
+  - name: Check if DHCP Snooping Enabled
+    debug:
       msg: "1st Condition Success!!"
     when: cli_out[0] == "ip dhcp snooping"
     register: result1
     ignore_errors: true
 
-  - debug:
+  - name: Check if DHCP Snooping Applied for VLANs
+    debug:
       msg: "2nd Condition Success."
     when: "'vlan' in cli_out[1]"
     register: result2
     ignore_errors: true
 
-  - name: Udating Overall
+  - name: Udating Result if Succeed
     set_fact:
       result: true
     when: result1 is success and result2 is success
 
-  - name: Updating Overall if Failed
+  - name: Updating Result if Failed
     set_fact:
       result: false
     when: result1 is failed or result2 is failed
@@ -36,10 +40,12 @@
       vlans: "{{ cli_out[1] | regex_replace('.*vlan (?P<vlans>)', '\\g<vlans>') }}"
     when: result2 is not failed
 
-  - debug:
+  - name: Print the Result if all good
+    debug:
       msg: DHCP Snooping Enabled for vlans {{ vlans }}!
     when: result | bool
 
-  - debug:
+  - name: Print the Result if not Baselined
+    debug:
       msg: DHCP Snooping is not Properly Configured!
     when: not result
