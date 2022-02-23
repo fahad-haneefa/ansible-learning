@@ -1,0 +1,60 @@
+---
+- name: "*** Local Users Check ***"
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    cli_out: [username nwadmin password 5 a!s@d#f$, username test password 5 abcd123]
+    result: ""
+    users: ""
+    loop_1: "nwadmin"
+
+  tasks:
+
+  - set_fact:
+      loop_end: "{{ cli_out|length }}"
+
+  - debug:
+      var: loop_end|int
+
+  - name: Check NWADMIN configured
+    debug:
+      msg: "{{ cli_out[item] }}"
+    when: "'nwadmin' in cli_out[item]"
+    loop: "{{ range(0, loop_end|int) | list }}"
+    register: result1
+
+  - name: Check if DHCP Snooping Applied for VLANs
+    debug:
+      msg: "2nd Condition Success."
+    when: "'vlan' in cli_out[1]"
+    register: result2
+    ignore_errors: true
+
+  - name: Udating Result if Succeed
+    set_fact:
+      result: true
+    when: result1 is success and result2 is success
+
+  - name: Updating Result if Failed
+    set_fact:
+      result: false
+    when: result1 is failed or result2 is failed
+
+  - name: Updating Vlans
+    set_fact:
+      vlans: "{{ cli_out[1] | regex_replace('.*vlan (?P<vlans>)', '\\g<vlans>') }}"
+    when: result2 is not failed
+
+  - name: Print the Result if all good
+    debug:
+      msg: DHCP Snooping Enabled for vlans {{ vlans }}!
+    when: result | bool
+
+  - name: Print the Result if not Baselined
+    debug:
+      msg: DHCP Snooping is not Properly Configured!
+    when: not result
+
+  - set_fact:
+      loop_end: "{{ cli_out|length }}"
